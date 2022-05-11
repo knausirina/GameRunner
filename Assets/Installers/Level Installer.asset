@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ec6f7feedcea6c4e90ad7700a5306a8, type: 3}
   m_Name: Level Installer
   m_EditorClassIdentifier: 
-  SegmentPrefab: {fileID: 6129994486550867871, guid: 2065159eb39bf7e4a975acf5e9f73760,
-    type: 3}
-  CointPrefab: {fileID: 184264, guid: 16cac8b68c4ca6448baecd0680e025f6, type: 3}
-  ObstacleSimplePrefab: {fileID: 1000011638144408, guid: 22facfbe232a90b45b681c638f2e490d,
-    type: 3}
-  ObstacleComplexPrefab: {fileID: 1000013842435444, guid: d68ac797bf384f84bbca159dc2a6e4d7,
-    type: 3}
-  Position: {x: 0, y: -0.52, z: 23}
+  _levelPools:
+    _coinPrefab: {fileID: 184264, guid: 16cac8b68c4ca6448baecd0680e025f6, type: 3}
+    _segmentPrefab: {fileID: 6129994486550867871, guid: 2065159eb39bf7e4a975acf5e9f73760,
+      type: 3}
+    _obstacleSimple: {fileID: 1000011638144408, guid: 22facfbe232a90b45b681c638f2e490d,
+      type: 3}
+    _obstacleComplex: {fileID: 1000013842435444, guid: d68ac797bf384f84bbca159dc2a6e4d7,
+      type: 3}
+  _middleLinePosition: {x: 0, y: -0.52, z: 0}
