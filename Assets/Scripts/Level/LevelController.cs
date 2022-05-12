@@ -53,7 +53,7 @@ namespace Level
             _segmentsByCoins = new Dictionary<Transform, Segment>();
 
             MessageBroker.Default.Receive<CoinEvent>()
-                .Subscribe(x => OnPickCoin(x.Transform));
+                .Subscribe(x => OnPickCoin(x.Transform));//.AddTo(this);
         }
 
         public void SetPlayer(Transform playerTransform)
@@ -64,10 +64,10 @@ namespace Level
         public void Build()
         {
             Clear();
+
             _isPlaying = true;
+
             _beginPos = _playerTransform.position.z;
-            GenerateSegment(true);
-            GenerateSegment(true);
         }
 
         public void Stop()
@@ -80,6 +80,13 @@ namespace Level
             _isPlaying = true;
         }
 
+        private void OnPickCoin(Transform transform)
+        {
+            var segment = _segmentsByCoins[transform];
+
+            segment.RemoveCoin(transform);
+        }
+
         public void Tick()
         {
             if (!_isPlaying)
@@ -87,13 +94,17 @@ namespace Level
                 return;
             }
 
-            ClearUnVisible();
             if (!NeedBuild())
             {
                 return;
             }
 
-            GenerateSegment(false);
+            ClearUnVisible();
+
+            var segment = GenerateSegment();
+            GenerateObstacles(segment);
+            GenerateCoins(segment);
+            Array.Clear(_positions, 0, _positions.Length);
         }
 
         private void Clear()
@@ -284,8 +295,7 @@ namespace Level
         }
 
         void IDisposable.Dispose()
-        {
-
+        { 
         }
     }
 }

@@ -1,5 +1,7 @@
+using Player;
 using UnityEngine;
 using Zenject;
+using Player;
 
 [CreateAssetMenu(menuName = "Installers/GameManager Installer")]
 public class GameManagerInstaller : ScriptableObjectInstaller

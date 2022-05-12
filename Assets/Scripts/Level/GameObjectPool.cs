@@ -7,7 +7,7 @@ namespace Level
 {
     public class GameObjectPool : ObjectPool<Transform>
     {
-        private readonly GameObject _prefab;
+        private GameObject _prefab;
 
         public GameObjectPool(GameObject prefab)
         {
@@ -16,7 +16,7 @@ namespace Level
 
         protected override Transform CreateInstance()
         {
-            return Object.Instantiate(_prefab).transform;
+            return GameObject.Instantiate(_prefab).transform;
         }
     }
 }
