@@ -1,13 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UniRx.Toolkit;
+﻿using UniRx.Toolkit;
 using UnityEngine;
 
 namespace Level
 {
     public class GameObjectPool : ObjectPool<Transform>
     {
-        private GameObject _prefab;
+        private readonly GameObject _prefab;
 
         public GameObjectPool(GameObject prefab)
         {
@@ -16,7 +14,7 @@ namespace Level
 
         protected override Transform CreateInstance()
         {
-            return GameObject.Instantiate(_prefab).transform;
+            return Object.Instantiate(_prefab).transform;
         }
     }
 }
