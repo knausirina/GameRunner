@@ -1,11 +1,10 @@
-﻿using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UI
 {
     public abstract class View : MonoBehaviour
     {
-        public void Show()
+        public virtual void Show()
         {
             gameObject.SetActive(true);
         }

@@ -29,62 +29,22 @@ namespace Level
 
             _disposable = new CompositeDisposable();
 
-            Debug.Log("_levelPools " +(_levelPools == null));
-            Debug.Log(" _levelPools.Segments " + (_levelPools.Segments == null));
-
             _transform = _levelPools.Segments.Rent();
             LengthSegment = Math.Abs(_transform.localScale.z);
             _transform.position = position;
+
             MessageBroker.Default
                 .Receive<CoinEvent>()
                 .Subscribe(x => OnPickCoin(x.Transform))
                 .AddTo(_disposable);
         }
 
-        private void OnPickCoin(Transform transform)
+        public void Generate(bool empty)
         {
-            RemoveCoin(transform);
-        }
-
-        public void AddObstacleSimple(Vector3 position)
-        {
-            var obstacle = _levelPools.ObstaclesSimple.Rent();
-            _obstaclesSimple.Add(obstacle);
-
-            obstacle.position = Position + position;
-
-            var animation = obstacle.GetComponentInChildren<Animation>();
-            animation.clip.SampleAnimation(obstacle.gameObject, 0);
-        }
-
-        public void AddObstacleComplex(Vector3 position)
-        {
-            var obstacle = _levelPools.ObstaclesComplex.Rent();
-            _obstaclesComplex.Add(obstacle);
-
-            var animation = obstacle.GetComponentInChildren<Animation>();
-            animation.clip.SampleAnimation(obstacle.gameObject, 0);
-
-            var anim = obstacle.GetComponentInChildren<Animation>();
-            anim.Rewind();
-            anim.Play();
-            anim.Sample();
-            anim.Stop();
-
-            obstacle.position = Position + position;
-        }
-
-        public void AddCoin(Vector3 position)
-        {
-            var coin = _levelPools.Coins.Rent();
-            coin.transform.position = _transform.position + position;
-            _coins.Add(coin);
-        }
-
-        public void RemoveCoin(Transform coinTransform)
-        {
-            _coins.Remove(coinTransform);
-            _levelPools.Coins.Return(coinTransform);
+            if (empty) return;
+            var cells = new TypePlace[(int)Math.Ceiling(LengthSegment / LevelController.CELL), LevelController.COLUMNS];
+            GenerateObstacles(cells);
+            GenerateCoins(cells);
         }
 
         public void Clear()
@@ -113,18 +73,60 @@ namespace Level
             _levelPools.Segments.Return(_transform);
         }
 
+        private void AddObstacleSimple(Vector3 position)
+        {
+            var obstacle = _levelPools.ObstaclesSimple.Rent();
+            _obstaclesSimple.Add(obstacle);
+
+            obstacle.position = Position + position;
+
+            var animation = obstacle.GetComponentInChildren<Animation>();
+            animation.clip.SampleAnimation(obstacle.gameObject, 0);
+        }
+
+        private void AddObstacleComplex(Vector3 position)
+        {
+            var obstacle = _levelPools.ObstaclesComplex.Rent();
+            _obstaclesComplex.Add(obstacle);
+
+            var animation = obstacle.GetComponentInChildren<Animation>();
+            animation.clip.SampleAnimation(obstacle.gameObject, 0);
+
+            var anim = obstacle.GetComponentInChildren<Animation>();
+            anim.Rewind();
+            anim.Play();
+            anim.Sample();
+            anim.Stop();
+
+            obstacle.position = Position + position;
+        }
+
+        private void AddCoin(Vector3 position)
+        {
+            var coin = _levelPools.Coins.Rent();
+            coin.transform.position = _transform.position + position;
+            _coins.Add(coin);
+        }
+
+        private void RemoveCoin(Transform transform)
+        {
+            _coins.Remove(transform);
+            _levelPools.Coins.Return(transform);
+        }
+
         public void Dispose()
         {
             _disposable.Dispose();
             Clear();
         }
 
-        public void Generate(bool empty)
+        private void OnPickCoin(Transform coinTransform)
         {
-            if (empty) return;
-            var cells = new TypePlace[(int)Math.Ceiling(LengthSegment / LevelController.CELL), LevelController.COLUMNS];
-            GenerateObstacles(cells);
-            GenerateCoins(cells);
+            if (!_coins.Contains(coinTransform))
+            {
+                return;
+            }
+            RemoveCoin(coinTransform);
         }
 
         private void GenerateObstacles(TypePlace[,] cells)

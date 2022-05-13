@@ -29,7 +29,6 @@ namespace Level
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static GameObjectPool GetPool(ref GameObjectPool pool, GameObject prefab)
         {
-            Debug.Log("GetPool GameObject " + (pool == null) + " prefab " + (prefab == null));
             if (pool == null)
             {
                 if (prefab == null)

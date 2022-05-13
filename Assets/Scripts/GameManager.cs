@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Player;
 using UI;
 using UniRx;
 using Zenject;
+
 public class GameManager : MonoBehaviour
 {
 	private const int MAX_COUNT_LIFE = 3;
@@ -72,7 +71,7 @@ public class GameManager : MonoBehaviour
 		{
 			_heroController.Die();
 
-			Views.ToggleDead(true);
+			Views.ShowDead();
 		}
 	}
 

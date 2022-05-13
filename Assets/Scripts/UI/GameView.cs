@@ -17,6 +17,17 @@ namespace UI
 
         private CompositeDisposable _disposable;
 
+        public void ToggleDead(bool isShow)
+        {
+            Dead.SetActive(isShow);
+        }
+
+        public override void Show()
+        {
+            base.Show();
+            ToggleDead(false);
+        }
+
         private void OnEnable()
         {
             _disposable = new CompositeDisposable();
@@ -28,11 +39,6 @@ namespace UI
         private void OnDisable()
         {
             _disposable?.Dispose();
-        }
-
-        public void ToggleDead(bool isShow)
-        {
-            Dead.SetActive(isShow);
         }
     }
 } 

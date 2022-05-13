@@ -1,7 +1,5 @@
-﻿using Player;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using UniRx;
 using UnityEngine;
 using Zenject;
 
@@ -108,7 +106,6 @@ namespace Level
         {
             var position = _startPosition;
             position.z += _beginPos;
-            Debug.Log(position);
             _lastSegment = new LevelSegment(_levelPools, position);
             _lastSegment.Generate(empty);
             _beginPos += _lastSegment.LengthSegment;

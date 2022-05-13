@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Threading.Tasks;
 
 namespace UI
 {
@@ -15,20 +14,19 @@ namespace UI
 
 		public void ShowStart()
 		{
-			GameView.gameObject.SetActive(false);
-			StartView.gameObject.SetActive(true);
+			StartView.Show();
+			GameView.Hide();
 		}
 
 		public void ShowGame()
 		{
-			StartView.gameObject.SetActive(false);
-			GameView.gameObject.SetActive(true);
-			ToggleDead(false);
+			StartView.Hide();
+			GameView.Show();
 		}
 
-		public void ToggleDead(bool isShow)
+		public void ShowDead()
 		{
-			GameView.ToggleDead(isShow);
+			GameView.ToggleDead(true);
 		}
 	}
 }
