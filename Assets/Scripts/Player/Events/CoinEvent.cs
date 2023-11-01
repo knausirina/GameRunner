@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Player
+namespace Player.Events
 {
     public class CoinEvent
     {

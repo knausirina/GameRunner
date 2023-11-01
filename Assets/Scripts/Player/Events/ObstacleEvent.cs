@@ -1,5 +1,4 @@
-﻿
-namespace Player
+﻿namespace Player.Events
 {
 	public class ObstacleEvent
 	{

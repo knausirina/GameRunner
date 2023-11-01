@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using Player;
+using Player.Events;
 using UI;
 using UniRx;
 using Zenject;
 
 public class GameManager : MonoBehaviour
 {
-	private const int MAX_COUNT_LIFE = 3;
+	private const int MaxCountLife = 3;
 
 	[Inject]
 	public IHeroController _heroController;
@@ -63,7 +64,7 @@ public class GameManager : MonoBehaviour
 	{
 		_hits++;
 
-		if (_hits <= MAX_COUNT_LIFE)
+		if (_hits <= MaxCountLife)
 		{
 			_heroController.Hit();
 		}

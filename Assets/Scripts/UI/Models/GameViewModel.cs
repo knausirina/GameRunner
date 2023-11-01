@@ -6,9 +6,13 @@ namespace UI
 {
     public class GameViewModel
     {
-        [Inject]
         private IScoreController _scoreController;
-
         public IReadOnlyReactiveProperty<int> CurrentScore => _scoreController.CurrentScore;
+
+        [Inject]
+        private void Construct(IScoreController scoreController)
+        {
+            _scoreController = scoreController;
+        }
     }
 }

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Player;
+using Player.Events;
 using UniRx;
 using UnityEngine;
 

@@ -15,7 +15,7 @@ namespace UI
         [Inject]
         private GameViewModel _model;
 
-        private CompositeDisposable _disposable;
+        private CompositeDisposable _scoreDisposable;
 
         public void ToggleDead(bool isShow)
         {
@@ -30,15 +30,15 @@ namespace UI
 
         private void OnEnable()
         {
-            _disposable = new CompositeDisposable();
+            _scoreDisposable = new CompositeDisposable();
             _model.CurrentScore
                 .Subscribe(x => _score.text = x.ToString())
-                .AddTo(_disposable);
+                .AddTo(_scoreDisposable);
         }
 
         private void OnDisable()
         {
-            _disposable?.Dispose();
+            _scoreDisposable?.Dispose();
         }
     }
 } 
