@@ -6,13 +6,15 @@ namespace Player
 {
     public class PlayerData : IDisposable
     {
+        private const string TopScorePlayerPrefs = "topScore";
+
         private readonly ReactiveProperty<int> _topScore;
 
         public IReadOnlyReactiveProperty<int> TopScore => _topScore;
 
         public PlayerData()
         {
-            _topScore = new ReactiveProperty<int>(PlayerPrefs.GetInt("topScore", 0));
+            _topScore = new ReactiveProperty<int>(PlayerPrefs.GetInt(TopScorePlayerPrefs, 0));
         }
 
         public void SetTopScore(int score)
@@ -20,13 +22,9 @@ namespace Player
             _topScore.Value = score;
         }
 
-        #region IDisposable
-
-        void IDisposable.Dispose()
+        public void Dispose()
         {
-            PlayerPrefs.SetInt("topScore", _topScore.Value);
+            PlayerPrefs.SetInt(TopScorePlayerPrefs, _topScore.Value);
         }
-
-        #endregion
     }
 }

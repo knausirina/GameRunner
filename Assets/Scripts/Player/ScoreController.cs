@@ -3,37 +3,29 @@ using System;
 
 namespace Player
 {
-	public class ScoreController : IScoreController, IDisposable
+	public class ScoreController : IScoreController
     {
         private readonly PlayerData _playerData;
         private readonly ReactiveProperty<int> _currentScore = new ReactiveProperty<int>();
 
-        public ScoreController(PlayerData playerData)
+        public IReadOnlyReactiveProperty<int> CurrentScore => _currentScore;
+        public IReadOnlyReactiveProperty<int> TopScore => _playerData.TopScore;
+
+        public ScoreController()
         {
-            _playerData = playerData;
+            _playerData = new PlayerData();
         }
 
-        #region IScoreController
-
-        IReadOnlyReactiveProperty<int> IScoreController.CurrentScore => _currentScore;
-        IReadOnlyReactiveProperty<int> IScoreController.TopScore => _playerData.TopScore;
-
-		void IScoreController.AddScore(int score)
+		public void AddScore(int score)
         {
             _currentScore.Value += score;
             if (_playerData.TopScore.Value < _currentScore.Value)
                 _playerData.SetTopScore(_currentScore.Value);
         }
 
-        void IScoreController.Reset()
+        public void Reset()
         {
             _currentScore.Value = 0;
-        }
-
-        #endregion
-
-        void IDisposable.Dispose()
-        {
         }
     }
 }

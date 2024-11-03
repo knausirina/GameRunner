@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using Player.Events;
 using UniRx;
 using UnityEngine;
+using Pool;
+using TMPro.Examples;
 
 namespace Level
 {
     public class LevelSegment : IDisposable
     {
-        private readonly LevelPools _levelPools;
-        private readonly Transform _transform;
+        private readonly Pools _pools;
+        private readonly Transform _segmentTransform;
 
         private readonly List<Transform> _coins;
         private readonly List<Transform> _obstaclesSimple;
@@ -18,20 +20,20 @@ namespace Level
         private readonly CompositeDisposable _disposable;
 
         public readonly float LengthSegment;
-        public Vector3 Position => _transform.position;
+        public Vector3 Position => _segmentTransform.position;
 
-        public LevelSegment(LevelPools levelPools, Vector3 position)
+        public LevelSegment(Pools pools, Vector3 position)
         {
-            _levelPools = levelPools;
+            _pools = pools;
             _coins = new List<Transform>();
             _obstaclesSimple = new List<Transform>();
             _obstaclesComplex = new List<Transform>();
 
             _disposable = new CompositeDisposable();
 
-            _transform = _levelPools.Segments.Rent();
-            LengthSegment = Math.Abs(_transform.localScale.z);
-            _transform.position = position;
+            _segmentTransform = _pools.Segments.Rent();
+            _segmentTransform.position = position;
+            LengthSegment = Math.Abs(_segmentTransform.localScale.z);
 
             MessageBroker.Default
                 .Receive<CoinEvent>()
@@ -39,10 +41,15 @@ namespace Level
                 .AddTo(_disposable);
         }
 
-        public void Generate(bool empty)
+        public void Generate(bool isEmptySegment)
         {
-            if (empty) return;
-            var cells = new TypePlace[(int)Math.Ceiling(LengthSegment / LevelController.CELL), LevelController.COLUMNS];
+            if (isEmptySegment)
+            {
+                return;
+            }
+
+            var rows = (int)Math.Ceiling(LengthSegment / Config.RoadWidth);
+            var cells = new TypePlace[rows, Config.RoundsCount];
             GenerateObstacles(cells);
             GenerateCoins(cells);
         }
@@ -51,31 +58,39 @@ namespace Level
         {
             foreach (var coin in _coins)
             {
-                _levelPools.Coins.Return(coin);
+                if (coin == null)
+                {
+                    Debug.Log("xxx !!! coin is null");
+                }
+                _pools.Coins.Return(coin);
             }
-
             _coins.Clear();
 
             foreach (var obstacle in _obstaclesSimple)
             {
-                _levelPools.ObstaclesSimple.Return(obstacle);
+                if (obstacle == null)
+                {
+                    Debug.Log("xxx !!! obstacle is null");
+                }
+                _pools.ObstaclesSimple.Return(obstacle);
             }
-
             _obstaclesSimple.Clear();
 
             foreach (var obstacle in _obstaclesComplex)
             {
-                _levelPools.ObstaclesComplex.Return(obstacle);
+                _pools.ObstaclesComplex.Return(obstacle);
             }
-
             _obstaclesComplex.Clear();
 
-            _levelPools.Segments.Return(_transform);
+            if (_segmentTransform != null)
+            {
+                _pools.Segments.Return(_segmentTransform);
+            }
         }
 
         private void AddObstacleSimple(Vector3 position)
         {
-            var obstacle = _levelPools.ObstaclesSimple.Rent();
+            var obstacle = _pools.ObstaclesSimple.Rent();
             _obstaclesSimple.Add(obstacle);
 
             obstacle.position = Position + position;
@@ -86,7 +101,7 @@ namespace Level
 
         private void AddObstacleComplex(Vector3 position)
         {
-            var obstacle = _levelPools.ObstaclesComplex.Rent();
+            var obstacle = _pools.ObstaclesComplex.Rent();
             _obstaclesComplex.Add(obstacle);
 
             var animation = obstacle.GetComponentInChildren<Animation>();
@@ -103,15 +118,15 @@ namespace Level
 
         private void AddCoin(Vector3 position)
         {
-            var coin = _levelPools.Coins.Rent();
-            coin.transform.position = _transform.position + position;
+            var coin = _pools.Coins.Rent();
+            coin.transform.position = _segmentTransform.position + position;
             _coins.Add(coin);
         }
 
         private void RemoveCoin(Transform transform)
         {
             _coins.Remove(transform);
-            _levelPools.Coins.Return(transform);
+            _pools.Coins.Return(transform);
         }
 
         public void Dispose()
@@ -138,7 +153,7 @@ namespace Level
             for (int i = 0; i < count; i++)
             {
                 int typeObstacle = UnityEngine.Random.Range(2, 4);
-                if (typeObstacle == (int)TypePlace.obstacleSimple)
+                if (typeObstacle == (int)TypePlace.SimpleObstacle)
                 {
                     int attempCount = 3;
                     var found = false;
@@ -151,7 +166,7 @@ namespace Level
                         bool allowPosition = true;
                         for (int j = 0; j < columns; j++)
                         {
-                            if (cells[randomRow, j] != TypePlace.none)
+                            if (cells[randomRow, j] != TypePlace.None)
                             {
                                 allowPosition = false;
                                 break;
@@ -169,36 +184,36 @@ namespace Level
 
                     if (found)
                     {
-                        cells[randomRow, randomColumn] = TypePlace.obstacleSimple;
+                        cells[randomRow, randomColumn] = TypePlace.SimpleObstacle;
                         for (int j = 0; j < columns; j++)
                         {
                             if (j != randomColumn)
                             {
-                                cells[randomRow, j] = TypePlace.busy;
+                                cells[randomRow, j] = TypePlace.Busy;
                             }
 
                             if (randomRow > 0)
                             {
-                                cells[randomRow - 1, j] = TypePlace.busy;
+                                cells[randomRow - 1, j] = TypePlace.Busy;
                             }
 
                             if (randomRow < (rows - 1))
                             {
-                                cells[randomRow + 1, j] = TypePlace.busy;
+                                cells[randomRow + 1, j] = TypePlace.Busy;
                             }
 
                             if (randomRow > 1)
                             {
-                                cells[randomRow - 2, j] = TypePlace.busy;
+                                cells[randomRow - 2, j] = TypePlace.Busy;
                             }
 
                             if (randomRow < (rows - 2))
                             {
-                                cells[randomRow + 2, j] = TypePlace.busy;
+                                cells[randomRow + 2, j] = TypePlace.Busy;
                             }
                         }
 
-                        AddObstacleSimple(new Vector3(-1 + randomColumn, 0.502f, randomRow * LevelController.CELL - LengthSegment / 2.0f + 0.5f));
+                        AddObstacleSimple(new Vector3(-1 + randomColumn, 0.502f, randomRow * Config.RoadWidth - LengthSegment / 2.0f + 0.5f));
                     }
                 }
                 else
@@ -212,7 +227,7 @@ namespace Level
                         bool allowPosition = true;
                         for (int j = 0; j < columns; j++)
                         {
-                            if (cells[randomRow, j] != TypePlace.none)
+                            if (cells[randomRow, j] != TypePlace.None)
                             {
                                 allowPosition = false;
                                 break;
@@ -232,29 +247,29 @@ namespace Level
                     {
                         for (int j = 0; j < columns; j++)
                         {
-                            cells[randomRow, j] = TypePlace.obstacleComplex;
+                            cells[randomRow, j] = TypePlace.ComplexObstacle;
                             if (randomRow > 0)
                             {
-                                cells[randomRow - 1, j] = TypePlace.busy;
+                                cells[randomRow - 1, j] = TypePlace.Busy;
                             }
 
                             if (randomRow < (rows - 1))
                             {
-                                cells[randomRow + 1, j] = TypePlace.busy;
+                                cells[randomRow + 1, j] = TypePlace.Busy;
                             }
 
                             if (randomRow > 1)
                             {
-                                cells[randomRow - 2, j] = TypePlace.busy;
+                                cells[randomRow - 2, j] = TypePlace.Busy;
                             }
 
                             if (randomRow < (rows - 2))
                             {
-                                cells[randomRow + 2, j] = TypePlace.busy;
+                                cells[randomRow + 2, j] = TypePlace.Busy;
                             }
                         }
 
-                        AddObstacleComplex(new Vector3(0, 0.502f, randomRow * LevelController.CELL - LengthSegment / 2.0f + 0.2f));
+                        AddObstacleComplex(new Vector3(0, 0.502f, randomRow * Config.RoadWidth - LengthSegment / 2.0f + 0.2f));
                     }
                 }
             }
@@ -272,11 +287,11 @@ namespace Level
             {
                 for (int j = 0; j < columns; j++)
                 {
-                    if (cells[i, j] == TypePlace.obstacleComplex)
+                    if (cells[i, j] == TypePlace.ComplexObstacle)
                     {
                         foundComplex = true;
                     }
-                    else if (cells[i, j] == TypePlace.obstacleSimple)
+                    else if (cells[i, j] == TypePlace.SimpleObstacle)
                     {
                         foundSimple = true;
                         columnSimple = j;
@@ -287,7 +302,7 @@ namespace Level
                 {
                     for (int i1 = prevRow; i1 < i; i1++)
                     {
-                        AddCoin(new Vector3(-1 + (foundSimple ? columnSimple : 0), 0.3f, 0.5f + i1 * LevelController.CELL - LengthSegment / 2));
+                        AddCoin(new Vector3(-1 + (foundSimple ? columnSimple : 0), 0.3f, 0.5f + i1 * Config.RoadWidth - LengthSegment / 2));
                     }
 
                     foundSimple = false;

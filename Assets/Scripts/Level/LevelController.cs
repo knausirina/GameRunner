@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Pool;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -7,29 +8,22 @@ namespace Level
 {
     public class LevelController : ITickable, IDisposable
     {
-		private const int DISTANCE_MIN_DRAW = 30;
-        public const int COLUMNS = 3;
-        public const float CELL = 4f / COLUMNS;
+		private const int MinDistanceForDrawNewLevel = 30;
 
-        private readonly LevelPools _levelPools;
+        private readonly Pools _pools;
         private readonly Vector3 _startPosition;
         private readonly IList<LevelSegment> _segments;
 
         private bool _isPlaying = false;
         private float _beginPos = 0;
 
-        private GameObjectPool _coinsPool;
-        private GameObjectPool _segmentsPool;
-        private GameObjectPool _obstaclesSimplePool;
-        private GameObjectPool _obstaclesComplexPool;
-
         private Transform _playerTransform;
 
 		public LevelSegment _lastSegment;
 
-        public LevelController(LevelPools levelPools, Vector3 startPosition)
+        public LevelController(Pools pools, Vector3 startPosition)
         {
-            _levelPools = levelPools;
+            _pools = pools;
             _startPosition = startPosition;
             _segments = new List<LevelSegment>();
         }
@@ -99,14 +93,14 @@ namespace Level
 
         private bool NeedBuild()
         {
-            return _beginPos - _playerTransform.position.z < DISTANCE_MIN_DRAW;
+            return _beginPos - _playerTransform.position.z < MinDistanceForDrawNewLevel;
         }
 
         private void GenerateSegment(bool empty)
         {
             var position = _startPosition;
             position.z += _beginPos;
-            _lastSegment = new LevelSegment(_levelPools, position);
+            _lastSegment = new LevelSegment(_pools, position);
             _lastSegment.Generate(empty);
             _beginPos += _lastSegment.LengthSegment;
             _segments.Add(_lastSegment);

@@ -9,10 +9,7 @@ namespace Player
     {
         public override void InstallBindings()
         {
-            var playerData = new PlayerData();
-            Container.BindInterfacesTo<ScoreController>()
-                .AsSingle()
-               .WithArguments(playerData);
+            Container.BindInterfacesTo<ScoreController>().AsSingle();
         }
     }
 }

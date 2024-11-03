@@ -4,33 +4,42 @@ using Player.Events;
 using UI;
 using UniRx;
 using Zenject;
+using Assets.Scripts;
+using Level;
+using Pool;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Zenject;
 
-public class GameManager : MonoBehaviour
+public class GameManager : IDisposable
 {
-	private const int MaxCountLife = 3;
+    [Inject] private IPlayerController _playerController;
+    [Inject] private IScoreController _scoreController;
+	[Inject] private LevelController _levelController;
 
-	[Inject]
-	public IHeroController _heroController;
-	[Inject]
-	private IScoreController _scoreController;
-
+    private const int MaxCountLife = 3;
 	private int _hits;
+	private int _score;
+	private GameStateEnum _gameState;
+	private GameContext _gameContext;
+	private CompositeDisposable _compositeDisposable = new CompositeDisposable();
 
-	public Views Views;
-	public GameObject Player;
-
-	private void Awake()
+    public GameManager(GameContext gameContext)
 	{
-		Player.SetActive(false);
+		_gameContext = gameContext;
+	}
 
+    private void Awake()
+	{
 		MessageBroker.Default.Receive<CoinEvent>()
-			  .Subscribe(x => OnPickCoin(x.Transform)).AddTo(this);
+			  .Subscribe(x => OnPickCoin(x.Transform)).AddTo(_compositeDisposable);
 
 		MessageBroker.Default.Receive<ObstacleEvent>()
-			  .Subscribe(x => OnHitObstacle()).AddTo(this);
+			  .Subscribe(x => OnHitObstacle()).AddTo(_compositeDisposable);
 
 		MessageBroker.Default.Receive<ResumeEvent>()
-			  .Subscribe(x => OnResume()).AddTo(this);
+			  .Subscribe(x => OnResume()).AddTo(_compositeDisposable);
 	}
 
 	public void StartGame()
@@ -38,24 +47,29 @@ public class GameManager : MonoBehaviour
 		_hits = 0;
 
 		_scoreController.Reset();
+		_playerController.Start();
+        _levelController.SetPlayer((_playerController as MonoBehaviour).transform);
+		_levelController.Build();
 
-		Player.SetActive(true);
-
-		_heroController.Run();
-
-		Views.ShowGame();
+        _gameContext.Views.ShowGame();
 	}
 
 	public void StopGame()
 	{
-		Player.SetActive(false);
+		_playerController.Stop();
+        _levelController.Stop();
 
-		_heroController.Stop();
-
-		Views.ShowStart();
+        _gameContext.Views.ShowStart();
 	}
 
-	private void OnPickCoin(Transform transform)
+    public void OnResume()
+    {
+        _playerController.Resume();
+        _levelController.Resume();
+
+    }
+
+    private void OnPickCoin(Transform transform)
 	{
 		_scoreController.AddScore(1);
 	}
@@ -66,18 +80,21 @@ public class GameManager : MonoBehaviour
 
 		if (_hits <= MaxCountLife)
 		{
-			_heroController.Hit();
-		}
+			_playerController.Hit();
+            _levelController.Stop();
+        }
 		else
 		{
-			_heroController.Die();
+			_playerController.Die();
+            _levelController.Stop();
 
-			Views.ShowDead();
+            _gameContext.Views.ShowDead();
 		}
 	}
 
-	private void OnResume()
+	public void Dispose()
 	{
-		_heroController.Resume();
-	}
+        _compositeDisposable.Dispose();
+
+    }
 }

@@ -2,9 +2,9 @@ namespace Level
 {
     public enum TypePlace
     {
-        none = 0,
-        busy = 1,
-        obstacleSimple = 2,
-        obstacleComplex = 3
+        None = 0,
+        Busy = 1,
+        SimpleObstacle = 2,
+        ComplexObstacle = 3
     };
 }

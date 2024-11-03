@@ -8,9 +8,7 @@ namespace UI
     {
         public override void InstallBindings()
         {
-            Container.Bind<GameViewModel>()
-                .FromNew()
-                .AsCached();
+            Container.Bind<GameViewModel>().FromNew().AsCached();
         }
     }
 }
