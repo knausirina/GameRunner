@@ -3,6 +3,7 @@ using UniRx;
 using UnityEngine;
 using Zenject;
 using UnityEngine.UI;
+using Player;
 
 namespace UI
 {
@@ -15,14 +16,14 @@ namespace UI
         [SerializeField] private Button _resumeGameButton;
 
         private CompositeDisposable _scoreDisposable;
-        private GameViewModel _gameViewModel;
         private GameManager _gameManager;
+        private IScoreController _scoreController;
 
         [Inject]
-        private void Construct(GameViewModel gameViewModel, GameManager gameManager)
+        private void Construct(GameManager gameManager, IScoreController scoreController)
         {
-            _gameViewModel = gameViewModel;
             _gameManager = gameManager;
+            _scoreController = scoreController;
         }
 
         private void Awake()
@@ -30,6 +31,13 @@ namespace UI
             _startGameButton.onClick.AddListener(OnStartGame);
             _pauseGameButton.onClick.AddListener(OnPauseGame);
             _resumeGameButton.onClick.AddListener(OnResumeGame);
+        }
+
+        private void OnDestroy()
+        {
+            _startGameButton.onClick.RemoveListener(OnStartGame);
+            _pauseGameButton.onClick.RemoveListener(OnPauseGame);
+            _resumeGameButton.onClick.RemoveListener(OnResumeGame);
         }
 
         public void ToggleDead(bool isShow)
@@ -59,7 +67,7 @@ namespace UI
         private void OnEnable()
         {
             _scoreDisposable = new CompositeDisposable();
-            _gameViewModel.CurrentScore.Subscribe(x => _score.text = x.ToString()).AddTo(_scoreDisposable);
+            _scoreController.CurrentScore.Subscribe(x => _score.text = x.ToString()).AddTo(_scoreDisposable);
         }
 
         private void OnDisable()

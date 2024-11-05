@@ -16,7 +16,6 @@ namespace UI
         [Inject]
         private void Construct(GameManager gameManager)
         {
-            Debug.Log("xxxxx StartView construct");
             _gameManager = gameManager;
         }
 
